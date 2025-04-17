@@ -5,7 +5,7 @@ s.boot;
 s.waitForBoot({
 	// Uncomment the next line to use sounds from the folder name specified in quotes
 	// Folder must exist in the same level as this supercollider patch
-	~sampleDir = thisProcess.nowExecutingPath.dirname +/+ "RevisedFrequencies_March282025";
+	~sampleDir = thisProcess.nowExecutingPath.dirname +/+ "frequencies";
 	// Uncomment the next line to use sounds from the default pollutant folder on RasPi
 	//~sampleDir = "/home/nandi/Documents/Pollutants";
 
