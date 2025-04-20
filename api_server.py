@@ -40,5 +40,10 @@ def play_pad():
     else:
         return jsonify({'error': f'No MP3 found for pad {pad}'}), 404
 
+# Healthcheck endpoint
+@app.route('/healthcheck')
+def healthcheck():
+    return jsonify({'status': 'ok'}), 200
+
 if __name__ == '__main__':
-    app.run(port=6000)
+    app.run(port=5000)
