@@ -1,8 +1,10 @@
 import os
 from flask import Flask, request, send_file, jsonify
 import socketio
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 MP3_FOLDER = 'webfiles'  # Change this if your mp3s are elsewhere
 
 # SocketIO client setup (connects to main_server.py)
