@@ -6,6 +6,8 @@ s.waitForBoot({
 	// Uncomment the next line to use sounds from the folder name specified in quotes
 	// Folder must exist in the same level as this supercollider patch
 	~sampleDir = thisProcess.nowExecutingPath.dirname +/+ "frequencies";
+	~baselineTrack = thisProcess.nowExecutingPath.dirname +/+ "/BaseTrack_v3_unlooped.wav";
+	~baseBuffer = Buffer.read(s, ~baselineTrack);
 	// Uncomment the next line to use sounds from the default pollutant folder on RasPi
 	//~sampleDir = "/home/nandi/Documents/Pollutants";
 
@@ -26,6 +28,13 @@ s.waitForBoot({
 			sig = BLowPass.ar(sig, lpeqf, 1); // Low pass eq
 			sig = BHiPass.ar(sig, hpeqf, 1); // Hi pass eq
 			sig = sig * env * amp;
+			Out.ar(out, sig); // Stereo output
+		}).add;
+		SynthDef(\basebuf, {
+			arg rate = 1, gate = 1, amp = 0.5, out = 0;
+			var sig, buf = ~baseBuffer;
+			sig = PlayBuf.ar(2, buf, rate * BufRateScale.ir(buf), doneAction: Done.freeSelf, loop: 1);
+			sig = sig * amp;
 			Out.ar(out, sig); // Stereo output
 		}).add;
 
@@ -55,6 +64,17 @@ s.waitForBoot({
 				~pollutantGroup.freeAll;
 			};
 		}, '/2/push16', nil, 57120);
+		OSCdef.new(\baseline, {
+			arg msg;
+			case { msg[1] == 0 } {
+                "Stop base track".postln;
+				~baseLine.free;
+			}
+			{ msg[1] == 1 } {
+				"Start base track".postln;
+				~baseLine = Synth("basebuf");
+			};
+		}, '/2/toggle4', nil, 57120);
 		OSCdef.new(\tank1Level, {
 			arg msg;
 			~tank1Group.set(\amp, msg[1]);
