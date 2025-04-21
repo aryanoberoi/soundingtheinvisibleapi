@@ -1,8 +1,10 @@
 import os
 from flask import Flask, request, send_file, jsonify
 import socketio
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 MP3_FOLDER = 'webfiles'  # Change this if your mp3s are elsewhere
 
 # SocketIO client setup (connects to main_server.py)
@@ -40,5 +42,10 @@ def play_pad():
     else:
         return jsonify({'error': f'No MP3 found for pad {pad}'}), 404
 
+# Healthcheck endpoint
+@app.route('/healthcheck')
+def healthcheck():
+    return jsonify({'status': 'ok'}), 200
+
 if __name__ == '__main__':
-    app.run(port=6000)
+    app.run(host='0.0.0.0', port=5000)
