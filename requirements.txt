@@ -2,3 +2,5 @@ python-osc
 flask 
 flask-socketio 
 eventlet
+python-dotenv 
+requests
