@@ -63,7 +63,7 @@ s.waitForBoot({
 				"Turn off sounds".postln;
 				~pollutantGroup.freeAll;
 			};
-		}, '/2/push16', nil, 57120);
+		}, '/2/stop', nil, 57120);
 		OSCdef.new(\baselinePage1, {
 			arg msg;
 			case { msg[1] == 0 } {
@@ -105,30 +105,18 @@ s.waitForBoot({
 		OSCdef.new(\pages, {
 			arg msg;
 			case { msg[1] == 1 } {
-				OSCdef.new(\lpToggle, {
+				OSCdef.new(\lpeq, {
 					arg msg;
-					case { msg[1] == 1 } {
-						"Assigned fader 5 to lpeq".postln;
-						OSCdef.new(\lpeq, {
-							arg msg;
-							var msgOut = "lpeq:" + msg[1].linlin(0, 1, 20, 20000);
-							msgOut.postln;
-							~pollutantGroup.set(\lpeqf, msg[1].linlin(0, 1, 20, 20000));
-						}, '/1/fader5', nil, 57120);
-					} { msg[1] == 0 } { OSCdef(\lpeq).free; }
-				}, '/1/toggle1', nil, 57120);
-				OSCdef.new(\hpToggle, {
+					var msgOut = "lpeq:" + msg[1].linlin(0, 1, 20, 20000);
+					msgOut.postln;
+					~pollutantGroup.set(\lpeqf, msg[1].linlin(0, 1, 20, 20000));
+				}, '/1/lpeq', nil, 57120);
+				OSCdef.new(\hpeq, {
 					arg msg;
-					case { msg[1] == 1 } {
-						"Assigned fader 5 to hpeq".postln;
-						OSCdef.new(\hpeq, {
-							arg msg;
-							var msgOut = "hpeq:" + msg[1].linlin(0, 1, 20, 20000);
-							msgOut.postln;
-							~pollutantGroup.set(\hpeqf, msg[1].linlin(0, 1, 20, 20000));
-						}, '/1/fader5', nil, 57120);
-					} { msg[1] == 0 } { OSCdef(\hpeq).free; }
-				}, '/1/toggle2', nil, 57120);
+					var msgOut = "hpeq:" + msg[1].linlin(0, 1, 20, 20000);
+					msgOut.postln;
+					~pollutantGroup.set(\hpeqf, msg[1].linlin(0, 1, 20, 20000));
+				}, '/1/hpeq', nil, 57120);
 				OSCdef.new(\panToggle, {
 					arg msg;
 					case { msg[1] == 1 } {
@@ -143,43 +131,17 @@ s.waitForBoot({
 				}, '/1/toggle3', nil, 57120);
 			}
 			{ msg[1] == 3 } {
-				"Assigned /3/toggle1 to set x to lpeq and /3/toggle2 to set x to hpeq".postln;
-				OSCdef.new(\lpToggle, {
+				"Assigned x axis to pan".postln;
+				OSCdef.new(\pan, {
 					arg msg;
-					case { msg[1] == 1 } {
-						"Assigned x axis to lpeq".postln;
-						OSCdef.new(\lpeq, {
-							arg msg;
-							var msgOut = "lpeq:" + msg[1].linlin(0, 1, 20, 20000);
-							msgOut.postln;
-							~pollutantGroup.set(\lpeqf, msg[1].linlin(0, 1, 20, 20000));
-						}, '/3/xy/x', nil, 57120);
-					} { msg[1] == 0 } { OSCdef(\lpeq).free; }
-				}, '/3/toggle1', nil, 57120);
-				OSCdef.new(\hpToggle, {
+					var msgOut = "pan:" + msg[1].linlin(0, 1, -1, 1);
+					msgOut.postln;
+					~pollutantGroup.set(\pan, msg[1].linlin(0, 1, -1, 1));
+				}, '/3/xy/x', nil, 57120);
+				OSCdef.new(\baselineLevel, {
 					arg msg;
-					case { msg[1] == 1 } {
-						"Assigned x axis to hpeq".postln;
-						OSCdef.new(\hpeq, {
-							arg msg;
-							var msgOut = "hpeq:" + msg[1].linlin(0, 1, 20, 20000);
-							msgOut.postln;
-							~pollutantGroup.set(\hpeqf, msg[1].linlin(0, 1, 20, 20000));
-						}, '/3/xy/x', nil, 57120);
-					} { msg[1] == 0 } { OSCdef(\hpeq).free; }
-				}, '/3/toggle2', nil, 57120);
-				OSCdef.new(\panToggle, {
-					arg msg;
-					case { msg[1] == 1 } {
-						"Assigned x axis to pan".postln;
-						OSCdef.new(\pan, {
-							arg msg;
-							var msgOut = "pan:" + msg[1].linlin(0, 1, -1, 1);
-							msgOut.postln;
-							~pollutantGroup.set(\pan, msg[1].linlin(0, 1, -1, 1));
-						}, '/3/xy/x', nil, 57120);
-					} { msg[1] == 0 } { OSCdef(\pan).free; }
-				}, '/3/toggle3', nil, 57120);
+					~baseLine.set(\amp, msg[1]);
+				}, '/3/xy/y', nil, 57120);
 			}
 		}, '/page', nil, 57120);
 	}.fork;
