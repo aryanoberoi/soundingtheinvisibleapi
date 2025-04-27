@@ -12,11 +12,10 @@ osc_client = udp_client.SimpleUDPClient('127.0.0.1', 57120)
 
 MP3_FOLDER = 'webfiles'
 
-API_SERVER_URL = os.getenv('API_SERVER_URL', 'http://your-api-server-ip:6000')  # Set this env variable!
+API_SERVER_URL = os.getenv('API_SERVER_URL', 'api.nanditakumar.com')  # Set this env variable!
 
 def get_global_ip():
     try:
-        # Try multiple services
         ip_services = [
             "https://api.ipify.org",
             "https://ifconfig.me/ip",
