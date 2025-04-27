@@ -4,6 +4,8 @@ import firebase_admin
 from firebase_admin import credentials, db
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import mimetypes
+from flask import send_file
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all CORS for the Flask app
@@ -18,28 +20,28 @@ firebase_admin.initialize_app(cred, {
 
 @app.route('/play_pad', methods=['GET', 'POST'])
 def play_pad():
-    data = request.json
-    device_id = data.get('device_id')
-    pad = data.get('pad')
-    if not device_id or pad is None:
-        return jsonify({'error': 'Missing device_id or pad'}), 400
+    if request.method == 'POST':
+        data = request.json
+        pad = data.get('pad')
+        device_id = data.get('device_id')
+    else:  # GET method
+        pad = request.args.get('pad', type=int)
+        device_id = request.args.get('device_id', 'raspi-001')
 
-    # 1. Serve MP3 file
+    if pad is None:
+        return jsonify({'error': 'Pad not specified'}), 400
+
+    # 1. Find MP3 file
     mp3_file = None
     for fname in os.listdir(MP3_FOLDER):
         if fname.endswith('.mp3') and str(pad) in fname:
             mp3_file = os.path.join(MP3_FOLDER, fname)
             break
 
-    if mp3_file and os.path.isfile(mp3_file):
-        with open(mp3_file, 'rb') as f:
-            mp3_bytes = f.read()
-        mp3_b64 = base64.b64encode(mp3_bytes).decode('utf-8')
-        mp3_response = {'filename': os.path.basename(mp3_file), 'data': mp3_b64}
-    else:
-        mp3_response = {'error': f'No MP3 found for pad {pad}'}
+    if not mp3_file or not os.path.isfile(mp3_file):
+        return jsonify({'error': f'No MP3 found for pad {pad}'}), 404
 
-    # 2. Send command to Firebase
+    # 2. Send Firebase command
     command_data = {
         'action': 'play_pad',
         'pad': pad
@@ -47,7 +49,10 @@ def play_pad():
     command_ref = db.reference(f'commands/{device_id}')
     command_ref.set(command_data)
 
-    return jsonify(mp3_response)
+    # 3. Return actual mp3 file (directly)
+    mime_type, _ = mimetypes.guess_type(mp3_file)
+    return send_file(mp3_file, mimetype=mime_type or 'audio/mpeg')
+
 
 @app.route('/stop_sounds', methods=['POST'])
 def stop_sounds():
