@@ -1,51 +1,53 @@
-import os
-from flask import Flask, request, send_file, jsonify
-import socketio
-from flask_cors import CORS
+# api_server.py
+import threading
+import time
+import requests
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
-CORS(app)
-MP3_FOLDER = 'webfiles'  # Change this if your mp3s are elsewhere
+main_servers = []
 
-# SocketIO client setup (connects to main_server.py)
-sio = socketio.Client()
-MAIN_SERVER_URL = os.getenv('MAIN_SERVER_URL')  # Set this environment variable to the correct ws server
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.json
+    ip = data.get('ip')
+    if ip:
+        if ip not in main_servers:
+            main_servers.append(ip)
+            print(f"Registered new main server: {ip}")
+        return jsonify({'message': 'Registered successfully'}), 200
+    return jsonify({'error': 'Invalid IP'}), 400
 
-# Try to connect to main_server.py at startup, but don't crash if it fails
-try:
-    sio.connect(MAIN_SERVER_URL)
-    print(f"Connected to main_server.py at {MAIN_SERVER_URL}")
-except Exception as e:
-    print(f"Warning: Could not connect to main_server.py at {MAIN_SERVER_URL}: {e}")
+@app.route('/trigger_all', methods=['POST'])
+def trigger_all():
+    data = request.json
+    action = data.get('action')
+    payload = data.get('payload', {})
 
-@app.route('/play_pad')
-def play_pad():
-    pad = request.args.get('pad')
-    if pad is None:
-        return jsonify({'error': 'pad parameter required'}), 400
+    results = {}
+    for ip in main_servers:
+        try:
+            url = f"http://{ip}/trigger"
+            resp = requests.post(url, json={'action': action, **payload}, timeout=5)
+            results[ip] = resp.json()
+        except Exception as e:
+            results[ip] = str(e)
+    return jsonify(results)
 
-    # Try to notify main_server.py via websocket, but continue if it fails
-    try:
-        sio.emit('play_pad', {'pad': pad})
-    except Exception as e:
-        print(f"Warning: Could not notify main_server.py via websocket: {e}")
-
-    # Find the mp3 file locally
-    mp3_file = None
-    for fname in os.listdir(MP3_FOLDER):
-        if fname.endswith('.mp3') and str(pad) in fname:
-            mp3_file = os.path.join(MP3_FOLDER, fname)
-            break
-
-    if mp3_file and os.path.isfile(mp3_file):
-        return send_file(mp3_file, mimetype='audio/mpeg', as_attachment=True)
-    else:
-        return jsonify({'error': f'No MP3 found for pad {pad}'}), 404
-
-# Healthcheck endpoint
-@app.route('/healthcheck')
-def healthcheck():
-    return jsonify({'status': 'ok'}), 200
+def heartbeat_checker():
+    while True:
+        time.sleep(30)
+        for ip in main_servers.copy():
+            try:
+                resp = requests.get(f"http://{ip}/ping", timeout=5)
+                if resp.status_code == 200:
+                    print(f"Main server {ip} alive")
+                else:
+                    print(f"Main server {ip} not responding correctly")
+            except:
+                print(f"Removing dead main server: {ip}")
+                main_servers.remove(ip)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=6000)
+    threading.Thread(target=heartbeat_checker, daemon=True).start()
+    app.run(host='0.0.0.0', port=6000, threaded=True)
