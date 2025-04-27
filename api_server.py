@@ -16,7 +16,7 @@ firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://soundingtheinvisible-default-rtdb.asia-southeast1.firebasedatabase.app/'  # Replace with your actual Firebase DB URL
 })
 
-@app.route('/play_pad', methods=['POST'])
+@app.route('/play_pad', methods=['GET', 'POST'])
 def play_pad():
     data = request.json
     device_id = data.get('device_id')
