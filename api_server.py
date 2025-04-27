@@ -50,4 +50,4 @@ def heartbeat_checker():
 
 if __name__ == '__main__':
     threading.Thread(target=heartbeat_checker, daemon=True).start()
-    app.run(host='0.0.0.0', port=6000, threaded=True)
+    app.run(host='0.0.0.0', port=5000, threaded=True)
