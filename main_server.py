@@ -33,7 +33,7 @@ def handle_play_pad(data):
 
 @socketio.on('stop_sounds')
 def handle_stop_sounds():
-    osc_client.send_message('/2/push16', [1])
+    osc_client.send_message('/2/stop', [1])
 
 @socketio.on('set_tank_level')
 def handle_set_tank_level(data):
