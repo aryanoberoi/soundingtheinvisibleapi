@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import mimetypes
 from flask import send_file
+import time
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all CORS for the Flask app
@@ -41,10 +42,10 @@ def play_pad():
     if not mp3_file or not os.path.isfile(mp3_file):
         return jsonify({'error': f'No MP3 found for pad {pad}'}), 404
 
-    # 2. Send Firebase command
     command_data = {
         'action': 'play_pad',
-        'pad': pad
+        'pad': pad,
+        'timestamp': int(time.time() * 1000)  # <- add this
     }
     command_ref = db.reference(f'commands/{device_id}')
     command_ref.set(command_data)
