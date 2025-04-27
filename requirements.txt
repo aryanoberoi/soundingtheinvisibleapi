@@ -4,4 +4,3 @@ firebase-admin
 eventlet
 python-dotenv 
 requests
-mimetypes
