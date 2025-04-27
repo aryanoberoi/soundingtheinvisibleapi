@@ -1,6 +1,6 @@
 python-osc
 flask 
-flask-socketio 
+firebase-admin
 eventlet
 python-dotenv 
 requests
