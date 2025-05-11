@@ -44,8 +44,7 @@ def play_pad():
 
     command_data = {
         'action': 'play_pad',
-        'pad': pad,
-        'timestamp': int(time.time() * 1000)  # <- add this
+        'pad': pad
     }
     command_ref = db.reference(f'commands/{device_id}')
     command_ref.set(command_data)
