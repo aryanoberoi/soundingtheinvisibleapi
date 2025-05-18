@@ -7,6 +7,7 @@ from flask_cors import CORS
 import mimetypes
 from flask import send_file
 import time
+import re
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all CORS for the Flask app
@@ -35,7 +36,7 @@ def play_pad():
     # 1. Find MP3 file
     mp3_file = None
     for fname in os.listdir(MP3_FOLDER):
-        if fname.endswith('.mp3') and str(pad) in fname:
+        if fname.endswith('.mp3') and re.match(rf'^{pad}(?!\d)', fname):
             mp3_file = os.path.join(MP3_FOLDER, fname)
             break
 
