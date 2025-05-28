@@ -1,0 +1,16 @@
+[Unit]
+After=multi-user.target
+
+[Service]
+Type=simple
+User=nandi
+Group=audio
+StandardOutput=journal
+StandardError=journal
+Environment="JACK_NO_AUDIO_RESERVATION=1"
+ExecStart=/usr/bin/jackd -R -P 75 -d alsa -d hw:2 -r 44100 -p 512 -S -s
+ExecStartPost=/usr/bin/jack_wait -w -t 10
+TimeoutStopSec=1
+
+[Install]
+WantedBy=multi-user.target

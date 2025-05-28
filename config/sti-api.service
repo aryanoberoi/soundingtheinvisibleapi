@@ -1,0 +1,15 @@
+[Unit]
+After=network.target
+
+[Service]
+Type=exec
+User=nandi
+Group=admin
+StandardOutput=journal
+StandardError=journal
+WorkingDirectory=/home/nandi/Dev/soundingtheinvisibleapi
+ExecStart=/home/nandi/Dev/soundingtheinvisibleapi/apitest/bin/python main_server.py
+TimeoutStopSec=1
+
+[Install]
+WantedBy=sti.target
