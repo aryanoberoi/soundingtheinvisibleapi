@@ -7,7 +7,7 @@ from flask_cors import CORS
 import mimetypes
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all CORS
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 MP3_FOLDER = 'webfiles'
 
@@ -40,7 +40,7 @@ def play_pad():
     # Secure file search—match padN.mp3 only, avoid pad10.mp3 for pad1
     mp3_file = None
     for fname in os.listdir(MP3_FOLDER):
-        if fname.endswith('.mp3') and re.match(rf'^{pad}\.mp3$', fname):
+        if fname.endswith('.mp3') and re.match(rf'^{pad}\b.*\.mp3$', fname):
             mp3_file = os.path.join(MP3_FOLDER, fname)
             break
 
