@@ -1,58 +1,70 @@
 import os
-import base64
+import re
 import firebase_admin
 from firebase_admin import credentials, db
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import mimetypes
-from flask import send_file
-import time
-import re
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all CORS for the Flask app
+CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all CORS
 
-MP3_FOLDER = 'webfiles'  # Your local MP3 folder
+MP3_FOLDER = 'webfiles'
 
-# Initialize Firebase
+# Firebase initialization
 cred = credentials.Certificate("credentials.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://soundingtheinvisible-default-rtdb.asia-southeast1.firebasedatabase.app/'  # Replace with your actual Firebase DB URL
+    'databaseURL': 'https://soundingtheinvisible-default-rtdb.asia-southeast1.firebasedatabase.app/'
 })
+
+def sanitize_pad(pad):
+    # Only allow positive integers, nothing else
+    if not str(pad).isdigit():
+        return None
+    return int(pad)
 
 @app.route('/play_pad', methods=['GET', 'POST'])
 def play_pad():
     if request.method == 'POST':
-        data = request.json
+        data = request.json or {}
         pad = data.get('pad')
-        device_id = data.get('device_id')
-    else:  # GET method
-        pad = request.args.get('pad', type=int)
+        device_id = data.get('device_id', 'raspi-001')
+    else:
+        pad = request.args.get('pad')
         device_id = request.args.get('device_id', 'raspi-001')
 
+    pad = sanitize_pad(pad)
     if pad is None:
-        return jsonify({'error': 'Pad not specified'}), 400
+        return jsonify({'error': 'Pad must be a positive integer'}), 400
 
-    # 1. Find MP3 file
+    # Secure file search—match padN.mp3 only, avoid pad10.mp3 for pad1
     mp3_file = None
     for fname in os.listdir(MP3_FOLDER):
-        if fname.endswith('.mp3') and re.match(rf'^{pad}(?!\d)', fname):
+        if fname.endswith('.mp3') and re.match(rf'^{pad}\.mp3$', fname):
             mp3_file = os.path.join(MP3_FOLDER, fname)
             break
 
     if not mp3_file or not os.path.isfile(mp3_file):
         return jsonify({'error': f'No MP3 found for pad {pad}'}), 404
 
-    command_data = {
-        'action': 'play_pad',
-        'pad': pad
-    }
-    command_ref = db.reference(f'commands/{device_id}')
-    command_ref.set(command_data)
+    # Firebase command
+# Firebase command (only for POST)
+    if request.method == 'POST':
+        try:
+            command_data = {
+                'action': 'play_pad',
+                'pad': pad
+            }
+            command_ref = db.reference(f'commands/{device_id}')
+            command_ref.set(command_data)
+        except Exception as e:
+            return jsonify({'error': 'Device command failed', 'details': str(e)}), 500
 
-    # 3. Return actual mp3 file (directly)
     mime_type, _ = mimetypes.guess_type(mp3_file)
     return send_file(mp3_file, mimetype=mime_type or 'audio/mpeg')
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 
 @app.route('/stop_sounds', methods=['POST'])
