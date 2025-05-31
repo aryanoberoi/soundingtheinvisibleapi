@@ -2,11 +2,11 @@
 s.boot;
 
 // Boot the server if not already booted
-s.waitForBoot({
+(s.waitForBoot({
 	// Uncomment the next line to use sounds from the folder name specified in quotes
 	// Folder must exist in the same level as this supercollider patch
 	~sampleDir = thisProcess.nowExecutingPath.dirname +/+ "frequencies";
-	~baselineTrack = thisProcess.nowExecutingPath.dirname +/+ "/BaseTrack_v3_unlooped.wav";
+	~baselineTrack = thisProcess.nowExecutingPath.dirname +/+ "/../BaseTrack_v3_unlooped.wav";
 	~baseBuffer = Buffer.read(s, ~baselineTrack);
 	// Uncomment the next line to use sounds from the default pollutant folder on RasPi
 	//~sampleDir = "/home/nandi/Documents/Pollutants";
@@ -146,4 +146,4 @@ s.waitForBoot({
 		}, '/page', nil, 57120);
 	}.fork;
 	"SuperCollider is ready to receive OSC messages!".postln;
-});
+}));
