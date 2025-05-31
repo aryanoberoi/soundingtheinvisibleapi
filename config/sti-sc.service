@@ -1,0 +1,15 @@
+[Unit]
+After=sti-jack.service
+Requires=sti-jack.service
+
+[Service]
+Type=simple
+User=nandi
+Group=audio
+StandardOutput=journal
+StandardError=journal
+ExecStart=/usr/bin/jackd -R -P 75 -d alsa -d hw:2 -r 44100 -p 512 -S -s
+TimeoutStopSec=1
+
+[Install]
+WantedBy=sti.target

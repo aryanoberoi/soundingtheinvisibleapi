@@ -1,0 +1,11 @@
+[Unit]
+Description=sounding the invisible
+
+Requires=sti-jack.service
+Requires=sti-api.service
+Requires=sti-sc.service
+
+AllowIsolate=yes
+
+[Install]
+WantedBy=multi-user.target
