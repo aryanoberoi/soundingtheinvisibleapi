@@ -51,9 +51,11 @@ def play_pad():
 # Firebase command (only for POST)
     if request.method == 'POST':
         try:
+            import time
             command_data = {
                 'action': 'play_pad',
-                'pad': pad
+                'pad': pad,
+                'timestamp': int(time.time())
             }
             command_ref = db.reference(f'commands/{device_id}')
             command_ref.set(command_data)
