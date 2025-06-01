@@ -3,6 +3,9 @@ from firebase_admin import credentials, db
 from pythonosc import udp_client
 import os
 import threading
+import time
+import random
+
 # Initialize Firebase
 cred = credentials.Certificate("credentials.json")
 firebase_admin.initialize_app(cred, {
@@ -21,7 +24,6 @@ def handle_command(event):
     action = command_data.get('action')
 
     if action == 'play_pad':
-        import time
         pad = command_data.get('pad')
         timestamp = command_data.get('timestamp')
         current_time = time.time()
@@ -50,5 +52,27 @@ def listen_for_commands():
     command_ref = db.reference(f'commands/{DEVICE_ID}')
     command_ref.listen(handle_command)
 
+def stress_test_add_commands():
+    """
+    Adds a play_pad command to the database every second for stress testing.
+    """
+    command_ref = db.reference(f'commands/{DEVICE_ID}')
+    pad_count = 8  # Assume 8 pads for random selection
+    while True:
+        pad = random.randint(1, pad_count)
+        timestamp = time.time()
+        command_data = {
+            'action': 'play_pad',
+            'pad': pad,
+            'timestamp': timestamp
+        }
+        # Use push to add a new command (simulate multiple requests)
+        command_ref.push(command_data)
+        print(f"Stress test: Added play_pad command for pad {pad} at {timestamp}")
+        time.sleep(1)
+
 if __name__ == '__main__':
+    # Start the stress test in a separate thread
+    stress_thread = threading.Thread(target=stress_test_add_commands, daemon=True)
+    stress_thread.start()
     listen_for_commands()
