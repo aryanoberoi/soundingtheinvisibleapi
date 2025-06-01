@@ -5,6 +5,9 @@ from firebase_admin import credentials, db
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import mimetypes
+import threading
+import random
+import time
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -47,11 +50,9 @@ def play_pad():
     if not mp3_file or not os.path.isfile(mp3_file):
         return jsonify({'error': f'No MP3 found for pad {pad}'}), 404
 
-    # Firebase command
-# Firebase command (only for POST)
+    # Firebase command (only for POST)
     if request.method == 'POST':
         try:
-            import time
             command_data = {
                 'action': 'play_pad',
                 'pad': pad,
@@ -65,9 +66,29 @@ def play_pad():
     mime_type, _ = mimetypes.guess_type(mp3_file)
     return send_file(mp3_file, mimetype=mime_type or 'audio/mpeg')
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
+def stress_test_play_pad(device_id='raspi-001'):
+    """
+    Continuously sends a play_pad command to the db every second
+    with a random integer from 1 to 40 as the pad value.
+    This function runs forever until the process is killed.
+    """
+    print(f"Starting stress test for device {device_id}. Press Ctrl+C to stop.")
+    count = 0
+    while True:
+        pad = random.randint(1, 40)
+        command_data = {
+            'action': 'play_pad',
+            'pad': pad,
+            'timestamp': int(time.time())
+        }
+        try:
+            command_ref = db.reference(f'commands/{device_id}')
+            command_ref.set(command_data)
+            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Sent play_pad for pad {pad} to device {device_id}")
+        except Exception as e:
+            print(f"Error sending play_pad for pad {pad}: {e}")
+        count += 1
+        time.sleep(1)
 
 @app.route('/stop_sounds', methods=['POST'])
 def stop_sounds():
@@ -106,4 +127,6 @@ def set_tank_level():
     return jsonify({'status': f'Tank {tank_id} level set to {level}'})
 
 if __name__ == '__main__':
+    # To run the stress test, uncomment the following line:
+    stress_test_play_pad('raspi-001')
     app.run(host='0.0.0.0', port=5000, threaded=True)
