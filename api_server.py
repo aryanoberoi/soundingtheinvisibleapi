@@ -10,8 +10,7 @@ import random
 import time
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
-
+CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "https://soundingtheinvisible.nanditakumar.com"]}})
 MP3_FOLDER = 'webfiles'
 
 # Firebase initialization
