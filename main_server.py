@@ -37,7 +37,7 @@ def handle_command(event):
                 print(f"Ignored play_pad for pad {pad}: timestamp {timestamp} expired by more than 10 seconds")
 
     elif action == 'stop_sounds':
-        osc_client.send_message('/2/push16', [1])
+        osc_client.send_message('/2/stop', [1])
         print("Stopping all sounds")
 
     elif action == 'set_tank_level':
