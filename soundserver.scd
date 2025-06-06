@@ -52,7 +52,17 @@ s.boot;
 				arg msg;
 				case { msg[1] == 1} {
 					msg[0].postln;
-					Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~pollutantGroup); }
+					case { msg[2] == 1} {
+						Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~tank1Group);
+					}
+					{ msg[2] == 2} {
+						Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~tank2Group);
+					}
+					{ msg[2] == 3} {
+						Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~tank3Group);
+					}
+					{	Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~pollutantGroup); }
+				}
 			}, addr.asString, nil, 57120);
 		});
 
