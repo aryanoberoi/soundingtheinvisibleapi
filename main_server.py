@@ -12,7 +12,8 @@ firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://soundingtheinvisible-default-rtdb.asia-southeast1.firebasedatabase.app/'  # Replace with your Firebase RTDB URL
 })
 
-DEVICE_ID = 'raspi-001'  # Unique ID for this Pi
+tank_number = int(os.getenv('TANK_NUMBER', 1))
+DEVICE_ID = f'raspi-00{tank_number}'  # Unique ID for this Pi
 osc_client = udp_client.SimpleUDPClient('127.0.0.1', 57120)
 MP3_FOLDER = 'webfiles'
 
@@ -34,8 +35,6 @@ def handle_command(event):
                 osc_address = f'/2/push{pad}'
                 osc_client.send_message(osc_address, [1, int(tank_number)])
                 print(f"Playing pad {pad} at timestamp {timestamp} for tank {tank_number}")  # Updated print statement
-            else:
-                print(f"Ignored play_pad for pad {pad}: timestamp {timestamp} expired by more than 10 seconds")
 
     elif action == 'stop_sounds':
         osc_client.send_message('/2/stop', [1])
