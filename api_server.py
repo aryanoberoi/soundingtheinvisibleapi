@@ -33,7 +33,7 @@ def play_pad():
         pad = data.get('pad')
         tank_number = data.get('tankNumber')
         print(f"TANK NUMBER: {tank_number}")
-        device_id = data.get('device_id', 'raspi-001')
+        device_id = data.get('device_id', f'raspi-00{tank_number}')
     else:
         print("GOT GET REQUEST")
 
