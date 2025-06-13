@@ -51,7 +51,8 @@ s.boot;
 			OSCdef.new(pad.asSymbol, {
 				arg msg;
 				case { msg[1] == 1} {
-					msg[0] ++ "to tank" ++ msg[2].postln;
+					msg[0].postln;
+					if (msg.size > 2) { "for tank " ++ msg[2].postln; }
 					case { msg[2] == 1} {
 						Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~tank1Group);
 					}
