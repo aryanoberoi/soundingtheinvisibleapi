@@ -5,6 +5,8 @@ import os
 import threading
 import time
 import random
+from dotenv import load_dotenv
+
 
 # Initialize Firebase
 cred = credentials.Certificate("credentials.json")
@@ -12,6 +14,8 @@ firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://soundingtheinvisible-default-rtdb.asia-southeast1.firebasedatabase.app/'  # Replace with your Firebase RTDB URL
 })
 
+
+load_dotenv()
 tank_number = int(os.getenv('TANK_NUMBER', 1))
 DEVICE_ID = f'raspi-00{tank_number}'  # Unique ID for this Pi
 osc_client = udp_client.SimpleUDPClient('127.0.0.1', 57120)
