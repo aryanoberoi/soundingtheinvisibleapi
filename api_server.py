@@ -31,11 +31,14 @@ def play_pad():
         print("GOT POST REQUEST")
         data = request.json or {}
         pad = data.get('pad')
+        tank_number = data.get('tankNumber')
         device_id = data.get('device_id', 'raspi-001')
     else:
         print("GOT GET REQUEST")
 
         pad = request.args.get('pad')
+        tank_number = request.args.get('tankNumber')
+        print(f"TANK NUMBER: {tank_number}")
         device_id = request.args.get('device_id', 'raspi-001')
 
     pad = sanitize_pad(pad)
@@ -58,6 +61,7 @@ def play_pad():
             command_data = {
                 'action': 'play_pad',
                 'pad': pad,
+                'tank_number': tank_number,
                 'timestamp': int(time.time())
             }
             command_ref = db.reference(f'commands/{device_id}')
