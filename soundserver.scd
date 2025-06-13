@@ -38,6 +38,8 @@ s.boot;
 			Out.ar(out, sig); // Stereo output
 		}).add;
 
+		Server.default.sync;
+
 		0.5.wait;
 
 		// Run through all the sounds in the directory
