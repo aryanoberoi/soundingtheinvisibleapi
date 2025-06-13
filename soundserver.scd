@@ -52,7 +52,7 @@ s.boot;
 				arg msg;
 				case { msg[1] == 1} {
 					msg[0].postln;
-					if (msg.size > 2) { "for tank " ++ msg[2].postln; }
+					if (msg.size > 2) { "for tank " ++ msg[2].postln; };
 					case { msg[2] == 1} {
 						Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~tank1Group);
 					}
@@ -62,7 +62,7 @@ s.boot;
 					{ msg[2] == 3} {
 						Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~tank3Group);
 					}
-					{	Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~pollutantGroup); }
+					{	Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~pollutantGroup); };
 				}
 			}, addr.asString, nil, 57120);
 		});
