@@ -72,6 +72,9 @@ s.boot;
 			case { msg[1] == 1} {
 				"Turn off sounds".postln;
 				~pollutantGroup.freeAll;
+				~tank1Group.freeAll;
+				~tank2Group.freeAll;
+				~tank3Group.freeAll;
 			};
 		}, '/2/stop', nil, 57120);
 		OSCdef.new(\baselinePage1, {
