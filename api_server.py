@@ -28,10 +28,15 @@ def sanitize_pad(pad):
 @app.route('/play_pad', methods=['GET', 'POST'])
 def play_pad():
     if request.method == 'POST':
+        print("GOT POST REQUEST")
         data = request.json or {}
         pad = data.get('pad')
+        tank_number = data.get('tankNumber')
+        print(f"TANK NUMBER: {tank_number}")
         device_id = data.get('device_id', 'raspi-001')
     else:
+        print("GOT GET REQUEST")
+
         pad = request.args.get('pad')
         device_id = request.args.get('device_id', 'raspi-001')
 
@@ -55,6 +60,7 @@ def play_pad():
             command_data = {
                 'action': 'play_pad',
                 'pad': pad,
+                'tank_number': tank_number,
                 'timestamp': int(time.time())
             }
             command_ref = db.reference(f'commands/{device_id}')
@@ -127,5 +133,5 @@ def set_tank_level():
 
 if __name__ == '__main__':
     # To run the stress test, uncomment the following line:
-    stress_test_play_pad('raspi-001')
-    app.run(host='0.0.0.0', port=5000, threaded=True)
+    # stress_test_play_pad('raspi-001')
+    app.run(host='0.0.0.0', port=5000, threaded=False)
