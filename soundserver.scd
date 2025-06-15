@@ -40,7 +40,7 @@ s.boot;
 
 		Server.default.sync;
 
-		0.5.wait;
+		"SuperCollider is ready to receive OSC messages!".postln;
 
 		// Run through all the sounds in the directory
 		~pollutants = PathName.new(~sampleDir).entries.do({
@@ -161,5 +161,4 @@ s.boot;
 			}
 		}, '/page', nil, 57120);
 	}.fork;
-	"SuperCollider is ready to receive OSC messages!".postln;
 }));
