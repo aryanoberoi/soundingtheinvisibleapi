@@ -38,6 +38,8 @@ s.boot;
 			Out.ar(out, sig); // Stereo output
 		}).add;
 
+		Server.default.sync;
+
 		0.5.wait;
 
 		// Run through all the sounds in the directory
@@ -51,7 +53,8 @@ s.boot;
 			OSCdef.new(pad.asSymbol, {
 				arg msg;
 				case { msg[1] == 1} {
-					msg[0] ++ "to tank" ++ msg[2].postln;
+					msg[0].postln;
+					if (msg.size > 2) { "for tank " ++ msg[2].postln; };
 					case { msg[2] == 1} {
 						Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~tank1Group);
 					}
@@ -61,7 +64,7 @@ s.boot;
 					{ msg[2] == 3} {
 						Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~tank3Group);
 					}
-					{	Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~pollutantGroup); }
+					{	Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~pollutantGroup); };
 				}
 			}, addr.asString, nil, 57120);
 		});
@@ -157,6 +160,6 @@ s.boot;
 				}, '/3/xy/y', nil, 57120);
 			}
 		}, '/page', nil, 57120);
+		"SuperCollider is ready to receive OSC messages!".postln;
 	}.fork;
-	"SuperCollider is ready to receive OSC messages!".postln;
 }));
