@@ -131,6 +131,10 @@ def set_tank_level():
 
     return jsonify({'status': f'Tank {tank_id} level set to {level}'})
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'healthy'}), 200
+
 if __name__ == '__main__':
     # To run the stress test, uncomment the following line:
     # stress_test_play_pad('raspi-001')
