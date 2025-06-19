@@ -118,6 +118,12 @@ s.boot;
 			arg msg;
 			~baseLine.set(\amp, msg[1]);
 		}, '/1/fader4', nil, 57120);
+		OSCdef.new(\pollutantLevel, {
+			arg msg;
+			var msgOut = "pollutantLevel:" + msg[1];
+			msgOut.postln;
+			~pollutantGroup.set(\amp, msg[1]);
+		}, '/1/fader5', nil, 57120);
 		OSCdef.new(\pages, {
 			arg msg;
 			case { msg[1] == 1 } {
@@ -133,31 +139,9 @@ s.boot;
 					msgOut.postln;
 					~pollutantGroup.set(\hpeqf, msg[1].linlin(0, 1, 20, 20000));
 				}, '/1/hpeq', nil, 57120);
-				OSCdef.new(\panToggle, {
-					arg msg;
-					case { msg[1] == 1 } {
-						"Assigned fader 5 to pan".postln;
-						OSCdef.new(\pan, {
-							arg msg;
-							var msgOut = "pan:" + msg[1].linlin(0, 1, -1, 1);
-							msgOut.postln;
-							~pollutantGroup.set(\pan, msg[1].linlin(0, 1, -1, 1));
-						}, '/1/fader5', nil, 57120);
-					} { msg[1] == 0 } { OSCdef(\pan).free; }
-				}, '/1/toggle3', nil, 57120);
 			}
 			{ msg[1] == 3 } {
-				"Assigned x axis to pan".postln;
-				OSCdef.new(\pan, {
-					arg msg;
-					var msgOut = "pan:" + msg[1].linlin(0, 1, -1, 1);
-					msgOut.postln;
-					~pollutantGroup.set(\pan, msg[1].linlin(0, 1, -1, 1));
-				}, '/3/xy/x', nil, 57120);
-				OSCdef.new(\baselineLevel, {
-					arg msg;
-					~baseLine.set(\amp, msg[1]);
-				}, '/3/xy/y', nil, 57120);
+				// Page 3
 			}
 		}, '/page', nil, 57120);
 		"SuperCollider is ready to receive OSC messages!".postln;
