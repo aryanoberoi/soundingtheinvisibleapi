@@ -37,7 +37,7 @@ def handle_command(event):
             # Only send if timestamp is not expired by more than 10 seconds
             if current_time - timestamp <= 10:
                 osc_address = f'/2/push{pad}'
-                osc_client.send_message(osc_address, [1, int(tank_number)])
+                osc_client.send_message(osc_address, [1])
                 print(f"Playing pad {pad} at timestamp {timestamp} for tank {tank_number}")  # Updated print statement
 
     elif action == 'stop_sounds':
