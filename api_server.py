@@ -9,15 +9,26 @@ import threading
 import random
 import time
 from io import BytesIO
+import logging
+from datetime import datetime
+
+# Set up logging
+log_folder = 'logs'
+os.makedirs(log_folder, exist_ok=True)
+log_filename = datetime.now().strftime("%Y-%m-%d") + '.log'
+log_path = os.path.join(log_folder, log_filename)
+logging.basicConfig(filename=log_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 mp3_cache = {}
 
 def load_mp3_files():
+    logging.info("Loading MP3 files from folder.")
     for fname in os.listdir(MP3_FOLDER):
         if fname.endswith('.mp3'):
             path = os.path.join(MP3_FOLDER, fname)
             with open(path, 'rb') as f:
                 mp3_cache[fname] = f.read()
+    logging.info("MP3 files loaded successfully.")
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "https://soundingtheinvisible.nanditakumar.com"]}})
@@ -30,30 +41,32 @@ cred = credentials.Certificate("credentials.json")
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://soundingtheinvisible-default-rtdb.asia-southeast1.firebasedatabase.app/'
 })
+logging.info("Firebase initialized.")
 
 def sanitize_pad(pad):
     # Only allow positive integers, nothing else
     if not str(pad).isdigit():
+        logging.warning(f"Invalid pad value: {pad}")
         return None
     return int(pad)
 
 @app.route('/play_pad', methods=['GET', 'POST'])
 def play_pad():
     if request.method == 'POST':
-        print("GOT POST REQUEST")
+        logging.info("Received POST request for /play_pad.")
         data = request.json or {}
         pad = data.get('pad')
         tank_number = data.get('tankNumber')
-        print(f"TANK NUMBER: {tank_number}")
+        logging.info(f"Tank number: {tank_number}")
         device_id = data.get('device_id', 'raspi-001')
     else:
-        print("GOT GET REQUEST")
-
+        logging.info("Received GET request for /play_pad.")
         pad = request.args.get('pad')
         device_id = request.args.get('device_id', 'raspi-001')
 
     pad = sanitize_pad(pad)
     if pad is None:
+        logging.error("Pad must be a positive integer.")
         return jsonify({'error': 'Pad must be a positive integer'}), 400
 
     # Secure file search—match padN.mp3 only, avoid pad10.mp3 for pad1
@@ -64,6 +77,7 @@ def play_pad():
             break
 
     if not mp3_file:
+        logging.error(f"No MP3 found for pad {pad}.")
         return jsonify({'error': f'No MP3 found for pad {pad}'}), 404
 
     # Firebase command (only for POST)
@@ -77,7 +91,9 @@ def play_pad():
             }
             command_ref = db.reference(f'commands/{device_id}')
             command_ref.set(command_data)
+            logging.info(f"Command sent to Firebase for device {device_id}: {command_data}")
         except Exception as e:
+            logging.error(f"Device command failed: {e}")
             return jsonify({'error': 'Device command failed', 'details': str(e)}), 500
 
         mime_type, _ = mimetypes.guess_type(mp3_file)
@@ -89,6 +105,7 @@ def stress_test_play_pad(device_id='raspi-001'):
     with a random integer from 1 to 40 as the pad value.
     This function runs forever until the process is killed.
     """
+    logging.info(f"Starting stress test for device {device_id}.")
     print(f"Starting stress test for device {device_id}. Press Ctrl+C to stop.")
     count = 0
     while True:
@@ -101,17 +118,21 @@ def stress_test_play_pad(device_id='raspi-001'):
         try:
             command_ref = db.reference(f'commands/{device_id}')
             command_ref.set(command_data)
+            logging.info(f"Sent play_pad for pad {pad} to device {device_id}")
             print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Sent play_pad for pad {pad} to device {device_id}")
         except Exception as e:
+            logging.error(f"Error sending play_pad for pad {pad}: {e}")
             print(f"Error sending play_pad for pad {pad}: {e}")
         count += 1
         time.sleep(1)
 
 @app.route('/stop_sounds', methods=['POST'])
 def stop_sounds():
+    logging.info("Received request for /stop_sounds.")
     data = request.json
     device_id = data.get('device_id')
     if not device_id:
+        logging.error("Missing device_id in /stop_sounds request.")
         return jsonify({'error': 'Missing device_id'}), 400
 
     # Send command to Firebase
@@ -120,16 +141,19 @@ def stop_sounds():
     }
     command_ref = db.reference(f'commands/{device_id}')
     command_ref.set(command_data)
+    logging.info(f"Stop sounds command sent to device {device_id}.")
 
     return jsonify({'status': 'Stop sounds command sent'})
 
 @app.route('/set_tank_level', methods=['POST'])
 def set_tank_level():
+    logging.info("Received request for /set_tank_level.")
     data = request.json
     device_id = data.get('device_id')
     tank_id = data.get('tank_id')
     level = data.get('level')
     if not device_id or tank_id not in [1, 2, 3] or level is None:
+        logging.error("Invalid input for /set_tank_level request.")
         return jsonify({'error': 'Invalid input'}), 400
 
     # Send command to Firebase
@@ -140,14 +164,17 @@ def set_tank_level():
     }
     command_ref = db.reference(f'commands/{device_id}')
     command_ref.set(command_data)
+    logging.info(f"Tank {tank_id} level set to {level} for device {device_id}.")
 
     return jsonify({'status': f'Tank {tank_id} level set to {level}'})
 
 @app.route('/health', methods=['GET'])
 def health_check():
+    logging.info("Health check requested.")
     return jsonify({'status': 'healthy'}), 200
 
 if __name__ == '__main__':
+    logging.info("Starting Flask application.")
     # To run the stress test, uncomment the following line:
     # stress_test_play_pad('raspi-001')
     app.run(host='0.0.0.0', port=5000, threaded=False)
