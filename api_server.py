@@ -96,8 +96,8 @@ def play_pad():
             logging.error(f"Device command failed: {e}")
             return jsonify({'error': 'Device command failed', 'details': str(e)}), 500
 
-        mime_type, _ = mimetypes.guess_type(mp3_file)
-        return send_file(BytesIO(mp3_cache[mp3_file]), mimetype=mime_type or 'audio/mpeg')
+    mime_type, _ = mimetypes.guess_type(mp3_file)
+    return send_file(BytesIO(mp3_cache[mp3_file]), mimetype=mime_type or 'audio/mpeg')
 
 def stress_test_play_pad(device_id='raspi-001'):
     """
