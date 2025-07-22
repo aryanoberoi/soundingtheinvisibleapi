@@ -8,10 +8,22 @@ import mimetypes
 import threading
 import random
 import time
+from io import BytesIO
+
+mp3_cache = {}
+
+def load_mp3_files():
+    for fname in os.listdir(MP3_FOLDER):
+        if fname.endswith('.mp3'):
+            path = os.path.join(MP3_FOLDER, fname)
+            with open(path, 'rb') as f:
+                mp3_cache[fname] = f.read()
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "https://soundingtheinvisible.nanditakumar.com"]}})
 MP3_FOLDER = 'webfiles'
+
+load_mp3_files()
 
 # Firebase initialization
 cred = credentials.Certificate("credentials.json")
@@ -46,12 +58,12 @@ def play_pad():
 
     # Secure file search—match padN.mp3 only, avoid pad10.mp3 for pad1
     mp3_file = None
-    for fname in os.listdir(MP3_FOLDER):
-        if fname.endswith('.mp3') and re.match(rf'^{pad}\b.*\.mp3$', fname):
-            mp3_file = os.path.join(MP3_FOLDER, fname)
+    for fname in mp3_cache:
+        if re.match(rf'^{pad}\b.*\.mp3$', fname):
+            mp3_file = fname
             break
 
-    if not mp3_file or not os.path.isfile(mp3_file):
+    if not mp3_file:
         return jsonify({'error': f'No MP3 found for pad {pad}'}), 404
 
     # Firebase command (only for POST)
@@ -68,8 +80,8 @@ def play_pad():
         except Exception as e:
             return jsonify({'error': 'Device command failed', 'details': str(e)}), 500
 
-    mime_type, _ = mimetypes.guess_type(mp3_file)
-    return send_file(mp3_file, mimetype=mime_type or 'audio/mpeg')
+        mime_type, _ = mimetypes.guess_type(mp3_file)
+        return send_file(BytesIO(mp3_cache[mp3_file]), mimetype=mime_type or 'audio/mpeg')
 
 def stress_test_play_pad(device_id='raspi-001'):
     """
