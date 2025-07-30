@@ -72,9 +72,9 @@ s.boot;
 			case { msg[1] == 1} {
 				"Turn off sounds".postln;
 				~pollutantGroup.freeAll;
-				~tank1Group.freeAll;
-				~tank2Group.freeAll;
-				~tank3Group.freeAll;
+				// ~tank1Group.freeAll;
+				// ~tank2Group.freeAll;
+				// ~tank3Group.freeAll;
 			};
 		}, '/2/stop', nil, 57120);
 		OSCdef.new(\baselinePage1, {
@@ -142,5 +142,7 @@ s.boot;
 			}
 		}, '/page', nil, 57120);
 		"SuperCollider is ready to receive OSC messages!".postln;
+		0.5.wait;
+		b = { var sig = SinOsc.ar(2000); var env = Env.triangle(1.5, 0.5).kr(doneAction: 2); sig * env }.play;
 	}.fork;
 }));
