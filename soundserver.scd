@@ -13,15 +13,15 @@ s.boot;
 
 	~pollutantGroup = Group.new;
 	// These are some groups that will be used to divide sounds between different tanks
-	~tank1Group = Group.new;
-	~tank2Group = Group.new;
-	~tank3Group = Group.new;
+	~tank1Group = Group.new(~pollutantGroup);
+	~tank2Group = Group.new(~pollutantGroup);
+	~tank3Group = Group.new(~pollutantGroup);
 
 	{
 		SynthDef(\bpfbuf, {
 			arg buf = 0, rate = 1, gate = 1, atk = 0.01,
 			sus = 1, rel = 1, amp = 0.5, out = 0,
-			startPos, hpeqf = 20, lpeqf = 20000;
+			startPos = 0, hpeqf = 20, lpeqf = 20000;
 			var env, sig, filt;
 			env = EnvGen.kr(Env.asr(atk, sus, rel), gate, doneAction: Done.freeSelf); // ASR envelope with gate control
 			sig = PlayBuf.ar(2, buf, rate * BufRateScale.ir(buf), startPos: startPos, doneAction: Done.freeSelf);
@@ -43,6 +43,7 @@ s.boot;
 		0.5.wait;
 
 		// Run through all the sounds in the directory
+		~pollutantSounds = Array.new;
 		~pollutants = PathName.new(~sampleDir).entries.do({
 			arg path, i;
 			var pad = "\pad" ++ i, addr = "/2/push" ++ (i+1);
@@ -52,20 +53,15 @@ s.boot;
 			// Add an OSC definition for the current sound
 			OSCdef.new(pad.asSymbol, {
 				arg msg;
-				case { msg[1] == 1} {
-					msg[0].postln;
-					if (msg.size > 2) { "for tank " ++ msg[2].postln; };
-					case { msg[2] == 1} {
-						Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~tank1Group);
-					}
-					{ msg[2] == 2} {
-						Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~tank2Group);
-					}
-					{ msg[2] == 3} {
-						Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~tank3Group);
-					}
-					{	Synth("bpfbuf", [\buf, ~pollutantSounds.at(i)], ~pollutantGroup); };
-				}
+				if (msg[1] == 1) {
+					var group = switch(msg[2],
+						1, ~tank1Group,
+						2, ~tank2Group,
+						3, ~tank3Group,
+						~pollutantGroup
+					);
+					Synth("bpfbuf", [\buf, ~pollutantSounds[i]], group);
+				};
 			}, addr.asString, nil, 57120);
 		});
 
