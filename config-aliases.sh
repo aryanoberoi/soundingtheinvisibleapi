@@ -11,10 +11,10 @@ function update-api() {
   git pull
 }
 
-export JACK_NO_AUDIO_RESERVATION=1
-export QT_QPA_PLATFORM=offscreen
-export DISPLAY=:0
+alias soundserver="cd ~/Dev/soundingtheinvisibleapi && sclang soundserver.scd"
 alias invisible-sound="~/Dev/soundingtheinvisibleapi/run.sh"
 alias edit-wifi="sudo nano /boot/firmware/wpa_supplicant.conf"
 alias check-wifi="iwconfig"
 alias attach-server="tmux attach -t sti"
+alias check-logs="journalctl --user-unit supercollider"
+alias clear-logs="sudo journalctl --rotate --vacuum-time=1d unit=supercollider.service"

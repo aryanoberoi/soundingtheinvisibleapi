@@ -1,4 +1,5 @@
 // Boot the server
+Server.program = "pw-jack scsynth";
 s.boot;
 
 // Boot the server if not already booted
