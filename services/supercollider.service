@@ -1,0 +1,13 @@
+[Unit]
+Description=Supercollider Server
+After=pipewire.service
+BindsTo=pipewire.service
+
+[Service]
+ExecStart=/usr/local/bin/sclang soundserver.scd
+WorkingDirectory=/home/nandi/Dev/soundingtheinvisibleapi
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
