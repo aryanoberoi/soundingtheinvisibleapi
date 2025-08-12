@@ -58,6 +58,7 @@ s.boot;
 					3, ~tank3Group,
 					~pollutantGroup
 				);
+				msg[0].postln;
 				Synth("bpfbuf", [\buf, ~pollutantSounds[i]], group);
 			};
 		}, addr.asString, nil, 57120);
