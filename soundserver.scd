@@ -8,11 +8,12 @@ s.boot;
 	// Folder must exist in the same level as this supercollider patch
 	~sampleDir = thisProcess.nowExecutingPath.dirname +/+ "frequencies";
 	~baselineTrack = thisProcess.nowExecutingPath.dirname +/+ "/../BaseTrack_v3_unlooped.wav";
-	~baseBuffer = Buffer.read(s, ~baselineTrack);
+	~baseDiskBuffer = Buffer.cueSoundFile(s, ~baselineTrack, 0, 2);
 	// Uncomment the next line to use sounds from the default pollutant folder on RasPi
 	//~sampleDir = "/home/nandi/Documents/Pollutants";
 
 	~pollutantGroup = Group.new;
+	~baselineGroup = Group.new;
 	// These are some groups that will be used to divide sounds between different tanks
 	~tank1Group = Group.new(~pollutantGroup);
 	~tank2Group = Group.new(~pollutantGroup);
@@ -21,21 +22,19 @@ s.boot;
 	SynthDef(\bpfbuf, {
 		arg buf = 0, rate = 1, gate = 1, atk = 0.01,
 		sus = 1, rel = 1, amp = 0.75, out = 0,
-		startPos = 0, hpeqf = 20, lpeqf = 20000;
+		hpeqf = 20, lpeqf = 20000;
 		var env, sig, filt;
 		env = EnvGen.kr(Env.asr(atk, sus, rel), gate, doneAction: Done.freeSelf); // ASR envelope with gate control
-		sig = PlayBuf.ar(2, buf, rate * BufRateScale.ir(buf), startPos: startPos, doneAction: Done.freeSelf);
+		sig = PlayBuf.ar(2, buf, rate * BufRateScale.ir(buf), doneAction: Done.freeSelf);
 		sig = BLowPass.ar(sig, lpeqf, 1); // Low pass eq
 		sig = BHiPass.ar(sig, hpeqf, 1); // Hi pass eq
 		sig = sig * env * amp;
 		Out.ar(out, sig); // Stereo output
 	}).add;
-	SynthDef(\basebuf, {
-		arg rate = 1, gate = 1, amp = 0.5, out = 0;
-		var sig, buf = ~baseBuffer;
-		sig = PlayBuf.ar(2, buf, rate * BufRateScale.ir(buf), doneAction: Done.freeSelf, loop: 1);
-		sig = sig * amp;
-		Out.ar(out, sig); // Stereo output
+	SynthDef(\streamedbaseline, {
+		arg out = 0, amp = 1;
+		var sig = DiskIn.ar(2, ~baseDiskBuffer.bufnum, 1);
+		Out.ar(out, sig * amp);
 	}).add;
 
 	s.sync;
@@ -76,22 +75,22 @@ s.boot;
 		arg msg;
 		case { msg[1] == 0 } {
 			"Stop base track".postln;
-			~baseLine.free;
+			~baselineGroup.free;
 		}
 		{ msg[1] == 1 } {
 			"Start base track".postln;
-			~baseLine = Synth("basebuf");
+			~baseLine = Synth("streamedbaseline", target: ~baselineGroup);
 		};
 	}, '/1/toggle4', nil, 57120);
 	OSCdef.new(\baselinePage2, {
 		arg msg;
 		case { msg[1] == 0 } {
 			"Stop base track".postln;
-			~baseLine.free;
+			~baselineGroup.free;
 		}
 		{ msg[1] == 1 } {
 			"Start base track".postln;
-			~baseLine = Synth("basebuf");
+			~baseLine = Synth("streamedbaseline", target: ~baselineGroup);
 		};
 	}, '/2/toggle4', nil, 57120);
 	OSCdef.new(\tank1Level, {
@@ -108,7 +107,7 @@ s.boot;
 	}, '/1/fader3', nil, 57120);
 	OSCdef.new(\baselineLevel, {
 		arg msg;
-		~baseLine.set(\amp, msg[1]);
+		~baselineGroup.set(\amp, msg[1]);
 	}, '/1/fader4', nil, 57120);
 	OSCdef.new(\pollutantLevel, {
 		arg msg;
