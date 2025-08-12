@@ -19,3 +19,5 @@ alias attach-server="tmux attach -t sti"
 alias check-sound-logs="journalctl --user-unit supercollider -f"
 alias clear-sound-logs="sudo journalctl --rotate --vacuum-time=1d unit=supercollider.service"
 alias restart-sound-server="systemctl --user daemon-reload && systemctl --user restart supercollider.service"
+alias stop-sound-server="systemctl --user stop supercollider.service"
+
