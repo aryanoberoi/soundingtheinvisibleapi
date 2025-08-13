@@ -140,4 +140,6 @@ s.boot;
 
 	"SuperCollider is ready to receive OSC messages!".postln;
 	b = { var sig = SinOsc.ar(2000); var env = Env.triangle(1.5, 0.5).kr(doneAction: 2); sig * env }.play;
+	~baseLine = Synth("streamedbaseline", target: ~baselineGroup);
+
 }));
