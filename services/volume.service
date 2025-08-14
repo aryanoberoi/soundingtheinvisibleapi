@@ -1,0 +1,12 @@
+[Unit]
+Description=Start volMain.py after login
+After=default.target
+
+[Service]
+WorkingDirectory=/home/nandi/Dev/soundingtheinvisibleapi/
+ExecStart=/home/nandi/Dev/soundingtheinvisibleapi/invisible-sound/bin/python3 /home/nandi/Dev/soundingtheinvisibleapi/volmain.py
+Restart=on-failure
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+[Install]
+WantedBy=default.target
